@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+
+<p>Hello,</p>
+<p>You have received a new request with the following information:</p><ul>
+<li>Requester: <?= form.requester_Email ?></li>
+<li>Purchase order ID: <?= form.uu_Id ?> </li>
+<li>Requester Manager: <?= form.requester_Content ?></li>
+</ul>
+<p>Please approve or deny this request.</p>
+<p><strong><a style="color: #97bf0d;" href="<?= form.approval_Url ?>">Approve</a></strong> or <strong><a style="color: #e95f47;" href="<?= form.deny_Url ?>">Deny</a></strong></p>
+
+<p>Regards,</p>
+<p>Approval Department</p>
+
+
+</body>
+
+  
+</html>
