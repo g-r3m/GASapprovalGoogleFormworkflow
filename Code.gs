@@ -1,3 +1,5 @@
+/** @OnlyCurrentDoc */
+
 /**
  * Main function to be triggered onFormSubmit 
  * Send a formatted email to an approver 
@@ -13,7 +15,7 @@
 */
 
 function autoFillGoogleDocFromForm(e) {
-// Assume it's the first sheet where the data is collected
+// assume it's the first sheet where the data is collected
 var sh = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 var last = sh.getLastRow();
 var lastcol = sh.getLastColumn();
@@ -31,6 +33,7 @@ var array = [ [Uuid, "NA", "NA",
 Logger.log('array to be inserted in the Sheet last: '+array);
 // insert colum 4
 var newRange = sh.getRange(last,4,1,5);
+Logger.log(newRange.getA1Notation());
 newRange.setValues(array);
 reviewContent_(
   Requesteremail,
