@@ -8,7 +8,7 @@
  */
 function reviewContent_(Requesteremail, RequestContent, Uuid, Last, state) {
   Logger.log('reviewContent Requesteremail: ' + Requesteremail + ' RequestContent: ' + RequestContent + ' Uuid: ' + Uuid + ' Last: ' + Last + " state: " + state);
-  var scriptUri = ScriptApp.getService().getUrl();
+  var scriptUri = DEPLOY_ID;
   Logger.log(scriptUri)
   // hack some values on to the data just for email templates.
   var ApprovalUrl = scriptUri + "?i=" + Uuid + '&state=' + APPROVED_STATE + '&last=' + Last;
