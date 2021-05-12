@@ -24,7 +24,7 @@ var RequestContent = e.values[2];
 // Generate Unique ID
 var Uuid = uuid_(lastcol);
 // return the URL : apps needs to be deployed
-var scriptUri = ScriptApp.getService().getUrl();
+var scriptUri = DEPLOY_ID;
 Logger.log('uri: '+scriptUri);
 // Append results in the Google Sheet
 var array = [ [Uuid, "NA", "NA",
