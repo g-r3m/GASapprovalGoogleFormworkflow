@@ -1,44 +1,63 @@
-/** @OnlyCurrentDoc */
-
 /**
- * Main function to be triggered onFormSubmit 
- * Send a formatted email to an approver 
- * It collect values from the submittedForm (see bellow)
- * @param {e}: event 
- * 
- * Columns mapping from the Google Sheet
- * 0 Timestamp	1 Email address	2 Approval request 	
- * This function is trigger onFormSubmit
- * Version: 1
- * Creation Date: May 2021 
- * Author: Jeremy Dessalines
-*/
-
-function autoFillGoogleDocFromForm(e) {
-// assume it's the first sheet where the data is collected
-var sh = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-var last = sh.getLastRow();
-var lastcol = sh.getLastColumn();
-var Requesteremail = e.values[1];
-var RequestContent = e.values[2];
-// Generate Unique ID
-var Uuid = uuid_(lastcol);
-// return the URL : apps needs to be deployed
-var scriptUri = DEPLOY_ID;
-Logger.log('uri: '+scriptUri);
-// Append results in the Google Sheet
-var array = [ [Uuid, "NA", "NA",
-'=HYPERLINK("'+scriptUri+'?i="&ROW()&"&state=APPROVED&last="&ROW(),"Approve")', 
-'=HYPERLINK("'+scriptUri+'?i="&ROW()&"&state=DENIED&last="&ROW(),"Deny")' ] ]
-Logger.log('array to be inserted in the Sheet last: '+array);
-// insert colum 4
-var newRange = sh.getRange(last,4,1,5);
-Logger.log(newRange.getA1Notation());
-newRange.setValues(array);
-reviewContent_(
-  Requesteremail,
-  RequestContent,
-  Uuid,
-  last
-  ); // TemplateEmail + Recipients settings 
+ * Send email based on a template message intent from Dialogflow Agent.
+ * @param {String} Requester email to find intent
+ * @param {String} Requester content 
+ * @param {String} Generated UUID for the request
+ * @param {Integer} Id of the last row of the sheet
+ * @param {state} Opt state of the request
+ */
+function reviewContent_(Requesteremail, RequestContent, Uuid, Last, state) {
+  Logger.log('reviewContent Requesteremail: ' + Requesteremail + ' RequestContent: ' + RequestContent + ' Uuid: ' + Uuid + ' Last: ' + Last + " state: " + state);
+  var scriptUri = DEPLOY_ID;
+  Logger.log(scriptUri)
+  // hack some values on to the data just for email templates.
+  var ApprovalUrl = scriptUri + "?i=" + Uuid + '&state=' + APPROVED_STATE + '&last=' + Last;
+  var DenyUrl = scriptUri + "?i=" + Uuid + '&state=' + DENIED_STATE + '&last=' + Last;
+  Logger.log(ApprovalUrl);
+  Logger.log(DenyUrl);
+  var form = {
+    requester_Email: Requesteremail,
+    requester_Content: RequestContent,
+    uu_Id: Uuid,
+    approval_Url: ApprovalUrl,
+    deny_Url: DenyUrl
+  };
+  if (state === undefined) {
+    // state is new
+    var templ = HtmlService.createTemplateFromFile('EmailTemp');
+    templ.form = form;
+    var message = templ.evaluate().getContent();
+    MailApp.sendEmail({
+      to: APPROVER_EMAIL,
+      cc: Session.getEffectiveUser().getEmail(),
+      subject: "[New Request] New moderation request",
+      htmlBody: message
+    });
+  }
+  if (state === APPROVED_STATE) {
+    // state is approved
+    var templ = HtmlService.createTemplateFromFile('EmailApprove');
+    templ.form = form;
+    var message = templ.evaluate().getContent();
+    MailApp.sendEmail({
+      to: Requesteremail,
+      cc: APPROVER_EMAIL,
+      bcc: Session.getEffectiveUser().getEmail(),
+      subject: "[Request - Approval workflow] Request Approve",
+      htmlBody: message
+    });
+  }
+  if (state === DENIED_STATE) {
+    // state is deny
+    var templ = HtmlService.createTemplateFromFile('EmailDeny');
+    templ.form = form;
+    var message = templ.evaluate().getContent();
+    MailApp.sendEmail({
+      to: Requesteremail,
+      cc: APPROVER_EMAIL,
+      bcc: Session.getEffectiveUser().getEmail(),
+      subject: "[Request - Approval workflow] Request Deny",
+      htmlBody: message
+    });
+  }
 }
